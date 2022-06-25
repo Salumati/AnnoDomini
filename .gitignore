@@ -3,3 +3,6 @@ project/
 .metals
 target/
 .vscode/
+
+// ignore save files
+*.xml

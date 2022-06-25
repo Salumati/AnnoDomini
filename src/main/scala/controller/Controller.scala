@@ -2,7 +2,8 @@ package controller
 
 
 import model.{Card, Table, TableGenerator}
-// // import model.fileIOComponent.Impl.FileIOAsXML
+import model.persistenceComponent.XMLImpl.FileIOAsXML
+// TODO: properly use google guice here
 // import model.persistenceComponent.XMLImpl.FileIO
 import util.{Observable, UndoManager}
 import controller.commands.{DoubtCommand, PlaceCardCommand}
@@ -41,7 +42,7 @@ class Controller(var table: Table) extends Observable{
 
 
   val undoManager = new UndoManager
-  //val fileIOAsXML = new FileIOAsXML
+  val fileIOAsXML = new FileIOAsXML
 
 
   def createTestTable(noOfPlayers:Int): Unit = {
@@ -76,14 +77,12 @@ class Controller(var table: Table) extends Observable{
     notifyObservers()
   }
 
-  /*
   def saveGame(): Unit = fileIOAsXML.save(table)
 
   def loadGame(): Unit= {
     table = fileIOAsXML.load
     notifyObservers()
   }
-  */
   /*
   def saveGameViaRestAsXML(): Unit = {
     val system: ActorSystem[Any] = ActorSystem(Behaviors.empty, "SingleRequest")

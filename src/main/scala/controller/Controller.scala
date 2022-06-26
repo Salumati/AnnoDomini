@@ -64,7 +64,7 @@ class Controller(var table: Table) extends Observable{
   }
 
   def showAllPlayers(): String = table.showAllPlayers
-  def confirmWinner: Any = if table.playerWon then "congratulations, player: " + table.previousPlayer + " has won!"
+  def confirmWinner: String = if (table.playerWon) {"congratulations, player: " + table.previousPlayer + " has won!"} else {""}
   def getCard(index:Int): Card = table.takePlayerCard(index)._1
 
   def undo(): Unit ={

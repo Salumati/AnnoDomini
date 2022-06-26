@@ -37,8 +37,11 @@ case class Table(players: List[Player], cardsOnTable: List[Card], deck: Deck, nu
   // TODO: make compatible with 1 Player session
   def getNextPlayer(player: Player = currentPlayer, keepCurrentPlayer: Boolean = false): List[Player] = {
     keepCurrentPlayer match
-      case false => players.tail ::: List(player)
-      case true => changePrevPlayer(player)
+      {
+        case false => players.tail ::: List(player)
+        case true => changePrevPlayer(player)
+      }
+      
   }
 
   def changePrevPlayer(changedPlayer: Player): List[Player] = {
@@ -54,9 +57,11 @@ case class Table(players: List[Player], cardsOnTable: List[Card], deck: Deck, nu
   def playerDoubtsCards: Table = {
     // TODO: change to match case and put stuff in different functions for better overview
     allCardsInOrder match
-      case true => punishPlayer(currentPlayer, numberOfPunishmentCards, false)
-      case false => punishPlayer(previousPlayer, numberOfPunishmentCards +1, true)
-  }
+      {
+        case true => punishPlayer(currentPlayer, numberOfPunishmentCards, false)
+        case false => punishPlayer(previousPlayer, numberOfPunishmentCards +1, true)
+      }
+     }
 
   def punishPlayer(player: Player, numOfCards: Int, keepCurrentPlayer: Boolean = false): Table = {
     val changedPlayer = playerDrawsCard(player, numOfCards)._1

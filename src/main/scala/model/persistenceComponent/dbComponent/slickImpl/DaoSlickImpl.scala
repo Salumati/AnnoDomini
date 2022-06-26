@@ -1,7 +1,7 @@
 package model.persistenceComponent.dbComponent.slickImpl
 
-import scala.concurrent.*
-import scala.concurrent.duration.*
+import scala.concurrent._
+import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
@@ -37,6 +37,10 @@ class DaoSlickImpl extends DaoInterface{
   override def load(): Table = {
     println("loading game form db")
     val db = Database.forConfig("mysqldb")
+    try{
+        val games = TableQuery[GameTable]
+    } finally db.close
+
     val tg = new TableGenerator
     tg.createTable()
   }

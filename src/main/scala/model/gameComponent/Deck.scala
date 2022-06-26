@@ -9,9 +9,11 @@ case class Deck(cards: List[Card] = Nil, extraCards: List[Card] = Nil) {
               during the game, the extra cards will be crads that have been discarded.
   */
   def drawFromDeck(n: Int): (List[Card], Deck) = {
-    n match
+    n match{
       case x if (deckHasEnoughCards(x)) => (cards.splitAt(n)._1, copy(cards = cards.splitAt(n)._2))
       case _ => createDeckFromExtraCards().drawFromDeck(n)
+    }
+      
     // Problem: if there aren't enough extraCards this will end in a loop
   }
 

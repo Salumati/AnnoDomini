@@ -31,8 +31,8 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.11" % "test"
 // slick impl
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.10"
 libraryDependencies +=  "com.h2database" % "h2" % "1.4.187"
-libraryDependencies += ("com.typesafe.slick" %% "slick" % "3.3.3").cross(CrossVersion.for3Use2_13)
-libraryDependencies += ("com.typesafe.slick" %% "slick-hikaricp" % "3.3.3").cross(CrossVersion.for3Use2_13)
+libraryDependencies += "com.typesafe.slick" %% "slick" % "2.12.15" //).cross(CrossVersion.for3Use2_13)
+libraryDependencies += "com.typesafe.slick" %% "slick-hikaricp" % "2.12.15" //).cross(CrossVersion.for3Use2_13)
 libraryDependencies += "mysql" % "mysql-connector-java" % "8.0.29"
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,
 // we're adding the scala-parser-combinators dependency to the set of dependencies

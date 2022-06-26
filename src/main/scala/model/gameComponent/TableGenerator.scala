@@ -1,4 +1,4 @@
-package model
+package model.gameComponent
 
 case class TableGenerator() {
   // TODO: change this to a parameterless class, put the parameters into the createTable method

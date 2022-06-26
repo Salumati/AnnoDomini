@@ -1,6 +1,6 @@
 package model.persistenceComponent
 
-import model.Table
+import model.gameComponent.Table
 
 trait FileIOInterface {
   def save(table:Table): Unit

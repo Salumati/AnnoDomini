@@ -1,7 +1,7 @@
 package model.persistenceComponent.XMLImpl
 
 import model.persistenceComponent.FileIOInterface
-import model.{Card, Deck, Table, Player}
+import model.gameComponent.{Card, Deck, Table, Player}
 import java.io.PrintWriter
 import java.io.File
 import model.persistenceComponent.FileIOInterface

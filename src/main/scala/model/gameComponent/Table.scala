@@ -1,4 +1,4 @@
-package model
+package model.gameComponent
 /*
 Table provides the main functionality for the game.
 It is the table the game gets played on.

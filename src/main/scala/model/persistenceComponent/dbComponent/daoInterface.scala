@@ -1,6 +1,6 @@
 package model.persistenceComponent.dbComponent
 
-import model.Table
+import model.gameComponent.Table
 
 trait DaoInterface {
 

@@ -1,7 +1,7 @@
 package controller
 
 
-import model.{Card, Table, TableGenerator}
+import model.gameComponent.{Card, Table, TableGenerator}
 import model.persistenceComponent.XMLImpl.FileIOAsXML
 // TODO: properly use google guice here
 // import model.persistenceComponent.XMLImpl.FileIO

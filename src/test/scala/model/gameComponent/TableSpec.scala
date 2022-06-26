@@ -1,6 +1,6 @@
 package model.gameComponent
 
-import model.{Card, Deck, Player, TableGenerator, Table}
+import model.gameComponent.{Card, Deck, Player, TableGenerator, Table}
 import org.scalatest.wordspec.AnyWordSpec
 
 class TableSpec extends AnyWordSpec {

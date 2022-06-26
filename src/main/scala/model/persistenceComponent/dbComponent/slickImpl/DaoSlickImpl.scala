@@ -10,7 +10,7 @@ import slick.jdbc.MySQLProfile.api._
 
 import model.persistenceComponent.dbComponent.DaoInterface
 import model.persistenceComponent.XMLImpl.FileIOAsXML
-import model.{Card, Table, Deck, Player, TableGenerator}
+import model.gameComponent.{Card, Table, Deck, Player, TableGenerator}
 
 
 class DaoSlickImpl extends DaoInterface{

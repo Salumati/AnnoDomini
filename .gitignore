@@ -6,3 +6,6 @@ target/
 
 // ignore save files
 *.xml
+
+// ignore worksheets
+*.sc

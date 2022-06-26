@@ -1,13 +1,13 @@
 package model.gameComponent
 
-import model.gameComponent.{Card, Deck, TableGenerator, Table}
+import model.{Card, Deck, Player, TableGenerator, Table}
 import org.scalatest.wordspec.AnyWordSpec
 
 class TableSpec extends AnyWordSpec {
   val testCard1 = Card("Card No. 0", 0)
   val testCard2 = Card("Card No. 100", 100)
-  val tg = TableGenerator(3, 40, 5)
-  val table = tg.createTable
+  val tg = TableGenerator()
+  val table = tg.createTable(3, 40, 5)
   "a Table:" when{
     "in general" should{
       "has a List of Playeres, that can play the game" in {

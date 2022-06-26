@@ -1,6 +1,6 @@
 package model.gameComponent
 
-import model.gameComponent.{Card, Deck, Deckgenerator}
+import model.{Card, Deck, Deckgenerator}
 import org.scalatest.wordspec.AnyWordSpec
 
 class DeckSpec extends AnyWordSpec{

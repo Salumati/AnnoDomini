@@ -26,7 +26,7 @@ import scala.io.StdIn.readLine
 
 object AnnoDomini {
 
-  val controller = new Controller(TableGenerator().createTable)
+  val controller = new Controller(TableGenerator().createTable())
   val tui = new Tui(controller)
 
   // val scanner = new Scanner(System.in)

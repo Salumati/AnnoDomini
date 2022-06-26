@@ -46,8 +46,8 @@ class Controller(var table: Table) extends Observable{
 
 
   def createTestTable(noOfPlayers:Int): Unit = {
-    val tb = TableGenerator(noOfPlayers, 40)
-    table = tb.createTable
+    val tb = new TableGenerator
+    table = tb.createTable(noOfPlayers, 40)
     notifyObservers()
   }
 

@@ -152,12 +152,6 @@ class DaoSlickImpl() extends DaoInterface{
       val gameCards = for(card <- allGameCards) yield Card(card._3, card._2)
 
       Table(allPlayersWithCards.toList, gameCards.toList, Deck(deckCards.toList))
-/*
-      val gameTableCards = db.run(allCards.filter(_.card_owner == gameID).result)
-      val deckCards = db.run(allCards.filter(_.card_owner == deckID))
-      val players = db.run(allPlayers.filter(_.game_id == gameID))
-      
-*/
 
     } finally db.close
   }

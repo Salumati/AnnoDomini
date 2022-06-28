@@ -1,11 +1,9 @@
 //import java.util.Scanner
 
-import controller.Controller
-import model.gameComponent.TableGenerator
+import model.gameComponent._
 import view.Tui
-
+import controller.Controller
 import scala.io.StdIn.readLine
-
 
 
 // general things to do:

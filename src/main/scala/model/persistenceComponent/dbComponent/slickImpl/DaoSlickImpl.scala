@@ -8,12 +8,15 @@ import scala.util.{Failure, Success, Try}
 import slick.dbio.{DBIO, DBIOAction}
 import slick.jdbc.MySQLProfile.api._
 
+import com.typesafe.config._
+// import simplelib._
+
 import model.persistenceComponent.dbComponent.DaoInterface
 import model.persistenceComponent.XMLImpl.FileIOAsXML
 import model.gameComponent.{Card, Table, Deck, Player, TableGenerator}
 
 
-class DaoSlickImpl extends DaoInterface{
+class DaoSlickImpl() extends DaoInterface{
   
     /*
   val dbUrl: String = "jdbc:mysql://" + sys.env.getOrElse("DATABASE_HOST", "localhost:3306") + "/" + sys.env.getOrElse("MYSQL_DATABASE", "cah") + "?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true"
@@ -28,144 +31,153 @@ class DaoSlickImpl extends DaoInterface{
     password = databasePassword
   )
   */
+  val cardsTable = TableQuery[CardTable]
+  val gamesTable = TableQuery[GameTable]
+  val playersTable = TableQuery[PlayerTable]
 
+  val gameID = "game1"
+  val deckID = "deck1"
+  val playerID = gameID+"P1"
 
   override def save(table: Table): Unit = {
     println("saving game in db")
+    val db = Database.forConfig("mysqldb")
+    try{
+      val createTablesIfNotExist = db.run(DBIO.seq((gamesTable.schema ++ cardsTable.schema ++ playersTable.schema).createIfNotExists))
+      
+      createTablesIfNotExist.onComplete{
+        case Success(s) => println("successfully created Databases")
+        case Failure(f) => println("Failed to create Database: " + f)
+      }
+      val allGametableCards = table.cardsOnTable
+      val allPlayers = table.players
+      val allDeckCards = table.deck.cards
+
+      Await.ready(createTablesIfNotExist, 3 minute)
+
+
+      val insertGameCards = db.run(cardsTable ++= ((table.cardsOnTable).map(c => (1, c.year, c.text, gameID))))
+      val insertPlayers = db.run(playersTable ++= table.players.map(p => ((gameID + p.name), p.name, gameID)))
+      val insertPCards = db.run(cardsTable ++= table.players.flatMap(p => p.hand.map(c => (1, c.year, c.text, (gameID+"_"+p.name)))))
+      val insertGame = db.run(gamesTable += (gameID, deckID))
+      val insertDeckCards = db.run(cardsTable ++= (table.deck.cards).map(c => (1, c.year, c.text, deckID)))
+
+      insertDeckCards.onComplete{
+        case Success(value) => println("successfully saved deck cards!")
+        case Failure(exception) => println("failed to insert deck cards: " + exception)
+      }
+
+      insertGame.onComplete{
+        case Success(value) => println("successfully saved game!")
+        case Failure(exception) => println("failed to insert game: " + exception)
+      }
+      insertGameCards.onComplete{
+        case Success(value) => println("successfully saved game cards!")
+        case Failure(exception) => println("failed to insert game cards: " + exception)
+      }
+      insertPlayers.onComplete{
+        case Success(value) => println("successfully saved players!")
+        case Failure(exception) => println("failed to insert players: " + exception)
+      }
+      insertPlayers.onComplete{
+        case Success(value) => println("successfully saved players cards!")
+        case Failure(exception) => println("failed to insert players cards: " + exception)
+      }
+
+      Await.ready(insertGame, 60 seconds)
+      Await.ready(insertGameCards, 60 seconds)
+      Await.ready(insertDeckCards, 60 seconds)
+      Await.ready(insertPlayers, 30 seconds)
+      Await.ready(insertPCards, 10 seconds)
+      
+      /*
+        for (player <- allPlayers) {
+          val playerID = gameID+'_'+player.name
+          playersTable += (playerID, player.name, gameID)
+          for(card <- player.hand) cardsTable += (card.year, cards.text, playerID)
+        }*/
+
+    } finally db.close
+
   }
 
   override def load(): Table = {
     println("loading game form db")
     val db = Database.forConfig("mysqldb")
     try{
-        val games = TableQuery[GameTable]
-    } finally db.close
 
-    val tg = new TableGenerator
-    tg.createTable()
+      val queryGetAllGameCards = cardsTable.filter(_.card_owner === gameID)
+
+      val getAllGameCards = db.run(queryGetAllGameCards.result)
+      val getAllPlayers = db.run(playersTable.filter(_.game_id === gameID).result)
+      val getDeck = db.run(cardsTable.filter(_.card_owner === deckID).result)
+
+      getAllGameCards.onComplete{
+        case Success(value) => println("loaded game cards")
+        case Failure(exception) => println("failed to load game cards:" + exception)
+      }
+      getAllPlayers.onComplete{
+        case Success(value) => println("loaded players")
+        case Failure(exception) => println("failed to load players:" + exception)
+      }
+      getDeck.onComplete{
+        case Success(value) => println("loaded deck")
+        case Failure(exception) => println("failed to load deck:" + exception)
+      }
+      
+      val allPlayers = Await.result(getAllPlayers, 120 second)
+      val allPlayersWithCards = {
+        for (player <- allPlayers) yield {
+          val playerName = player._2
+          val getPlayerCards = Await.result(db.run(cardsTable.filter(_.card_owner === player._1).result), 120 seconds)
+          val playerCards = for(card <- getPlayerCards) yield Card(card._3, card._2)
+          Player(playerName, playerCards.toList)
+        }
+      }
+
+
+      val allGameCards = Await.result(getAllGameCards, 120 second)
+      
+      val deck = Await.result(getDeck, 120 second)
+
+
+
+      println("all game cards: " + allGameCards)
+      println("all players: " + allPlayers)
+      println("all Players with cards " + allPlayersWithCards)
+      println("the game data: "+ deck)
+
+      val deckCards = for(card <- deck) yield Card(card._3, card._2)
+      println(deckCards.toList)
+      val gameCards = for(card <- allGameCards) yield Card(card._3, card._2)
+
+      Table(allPlayersWithCards.toList, gameCards.toList, Deck(deckCards.toList))
+/*
+      val gameTableCards = db.run(allCards.filter(_.card_owner == gameID).result)
+      val deckCards = db.run(allCards.filter(_.card_owner == deckID))
+      val players = db.run(allPlayers.filter(_.game_id == gameID))
+      
+*/
+
+    } finally db.close
+  }
+
+  def deleteAllEntries(): Unit = {
+    println("deleteng all db entires")
+    val db = Database.forConfig("mysqldb")
+    try {
+      val deleteCards = db.run(cardsTable.delete)
+      val deletePlayers = db.run(playersTable.delete)
+      val deleteGames = db.run(gamesTable.delete)
+
+    } finally db.close()
   }
   
-
-
-
-
-
-/*
-  val gameID = 100
-  val deckID = 200
-
-  val cardTable = TableQuery[CardTable]
-  val deckTable = TableQuery[DeckTable]
-  val gameTable = TableQuery[GameTable]
-  val playerTable = TableQuery[PlayerTable]
-
-  override def save(game: String): Unit =
-  {
-    println("Saving game in MySQL")
-    val db = Database.forConfig("mysqldb")
-    try{
-      println("attempting to save mockdata in db:")
-      val setup = DBIO.seq((deckTable.schema ++ gameTable.schema ++ cardTable.schema ++ playerTable.schema).createIfNotExists)
-
-      val setupFuture = db.run(setup)
-      setupFuture.onComplete {
-        case Success(s) => println(s"created Database")
-        case Failure(fa) => println(s"failed to insert values. error: $fa")
-      }
-      Await.ready(setupFuture, Duration(100, MILLISECONDS))
-
-      val gameAsXML = scala.xml.XML.loadString(game)
-      val deck = deckFromXML(gameAsXML)
-      val players = playerListFromXML(gameAsXML)
-      val tableCards = cardListFromXML(gameAsXML)
-
-/*
-      // save the deck and it's cards
-      val insertDeckActionFuture = db.run(gameTable += (gameID, deckID))
-      val insertDeckCardsActionFuture = db.run(for (card <- deck) do yield cardTable += (card._1, card._2, deckID))
-      // save all the cards on the table
-      val insertTableCardsActionFuture = db.run(for (card <- tableCards) do yield cardTable += (card._1, card._2, gameID))
-      // save the players
-      val insertPlayersAction = DBIO.seq{
-        for (player <- players)
-          do
-          yield playerTable += (player._1, gameID)
-          for (card <- player._2) do yield cardTable += (card._1, card._2)
-      }
-      val insertPlayerFutur = db.run(insertPlayersAction)
-
-*/
-/*
-
-      Await.ready(insertDeckActionFuture)
-      Await.ready(insertTableCardsActionFuture)
-      Await.ready(insertTableCardsActionFuture)
-      Await.ready(insertPlayerFutur)
-*/
-
-    }finally db.close()
-
-    }
-
-  override def load: Option[String] =  {
-    println("loading game from mysql db")
-    val db = Database.forConfig("mysqldb")
-
-    try{
-
-        println("blabla")
-        Option[String]("bla")
-        /*
-      val gameQuery = gameTable.filter(_.game_id = gameID)
-
-      val players = db.run(players.result).map(_.foreach{
-        case (player_id, player_name, game_id) =>
-          (player_id, player_name, game_id)})
-
-      val cards = db.run(cards.result).map(_.foreach{
-        case (card_id, card_year, card_text, card_owner) =>
-          (card_id, card_year, card_text, card_owner)})
-
-      // get the cards on the game table
-        */
-
-    }finally {
-      db.close()
-    }
-
+  def checkConfig(): Unit = {
+    val conf = ConfigFactory.load()
+    println("driver: " + conf.getString("mysqldb.driver"))
+    println("user: " + conf.getString("mysqldb.user"))
+    println("password: " + conf.getString("mysqldb.password"))
   }
-
-  // xml reading classes:
-  def cardFromXML(xml: scala.xml.Node): (text:String, year:Int) = {
-    val year = (xml \ "year").text.toInt
-    val text = (xml \ "text").text
-    (year, text)
-  }
-
-  def cardListFromXML(xml: scala.xml.NodeSeq): List[(text:String, year:Int)] = {
-    val x = (xml \ "hand")
-    val list = for (el <- (x \ "card")) yield el
-    val hand = for (el <- list) yield cardFromXML(el)
-    hand.toList
-  }
-
-  def deckFromXML(xml: scala.xml.NodeSeq) ={
-    val relevantXML = (xml \ "deck")
-    val deck = cardListFromXML(relevantXML)
-   deck
-  }
-
-  def playerFromXML(xml: scala.xml.NodeSeq):Player = {
-    val name = (xml \ "name").text
-    val cards = cardListFromXML(xml)
-    (name, cards)
-  }
-
-  def playerListFromXML(xml: scala.xml.NodeSeq): List[Player] ={
-    val relevantXML = (xml \ "players")
-    val players = for (player <- (relevantXML \ "player")) yield playerFromXML(player)
-    players.toList
-  }
-*/
 }
 

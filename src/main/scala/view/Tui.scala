@@ -42,6 +42,8 @@ class Tui(controller: Controller) extends Observer{
       case "r" => doAMove(controller.redo())
       case "s" => doAMove(saveGame())
       case "l" => doAMove(loadGame())
+      case "sd" => doAMove(saveGameInDB())
+      case "ld" => doAMove(loadGameFromDB())
        /*
       case "rl" => doAMove(loadGameViaRest())
       case "rs" => doAMove(saveGameViaRest())
@@ -65,6 +67,8 @@ class Tui(controller: Controller) extends Observer{
       "\n r = redo"+
       "\n s = save game" +
       "\n l = load game" +
+      "\n sd = save in db" +
+      "\n ld = load from db" +
       "\n rs = save game the REST way" +
       "\n rl = load game the REST way" +      
       "\n q = quit game" +
@@ -111,6 +115,15 @@ class Tui(controller: Controller) extends Observer{
   def loadGame(): Unit={
     controller.loadGame()
     println("game loaded")
+  }
+
+  def saveGameInDB(): Unit ={
+    controller.saveGameInDB()
+    println("saved game from DB")
+  }
+  def loadGameFromDB(): Unit={
+    controller.loadGameFromDB()
+    println("game loaded from DB")
   }
   /*
   def saveGameViaRest(): Unit ={

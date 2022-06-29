@@ -9,7 +9,6 @@ import slick.dbio.{DBIO, DBIOAction}
 import slick.jdbc.MySQLProfile.api._
 
 import com.typesafe.config._
-// import simplelib._
 
 import model.persistenceComponent.dbComponent.DaoInterface
 import model.persistenceComponent.XMLImpl.FileIOAsXML
@@ -55,7 +54,6 @@ class DaoSlickImpl() extends DaoInterface{
 
       Await.ready(createTablesIfNotExist, 3 minute)
 
-
       val insertGameCards = db.run(cardsTable ++= ((table.cardsOnTable).map(c => (1, c.year, c.text, gameID))))
       val insertPlayers = db.run(playersTable ++= table.players.map(p => ((gameID + p.name), p.name, gameID)))
       val insertPCards = db.run(cardsTable ++= table.players.flatMap(p => p.hand.map(c => (1, c.year, c.text, (gameID+"_"+p.name)))))
@@ -66,7 +64,6 @@ class DaoSlickImpl() extends DaoInterface{
         case Success(value) => println("successfully saved deck cards!")
         case Failure(exception) => println("failed to insert deck cards: " + exception)
       }
-
       insertGame.onComplete{
         case Success(value) => println("successfully saved game!")
         case Failure(exception) => println("failed to insert game: " + exception)
@@ -87,16 +84,8 @@ class DaoSlickImpl() extends DaoInterface{
       Await.ready(insertGame, 60 seconds)
       Await.ready(insertGameCards, 60 seconds)
       Await.ready(insertDeckCards, 60 seconds)
-      Await.ready(insertPlayers, 30 seconds)
-      Await.ready(insertPCards, 10 seconds)
-      
-      /*
-        for (player <- allPlayers) {
-          val playerID = gameID+'_'+player.name
-          playersTable += (playerID, player.name, gameID)
-          for(card <- player.hand) cardsTable += (card.year, cards.text, playerID)
-        }*/
-
+      Await.ready(insertPlayers, 60 seconds)
+      Await.ready(insertPCards, 60 seconds)
     } finally db.close
 
   }
@@ -105,9 +94,7 @@ class DaoSlickImpl() extends DaoInterface{
     println("loading game form db")
     val db = Database.forConfig("mysqldb")
     try{
-
       val queryGetAllGameCards = cardsTable.filter(_.card_owner === gameID)
-
       val getAllGameCards = db.run(queryGetAllGameCards.result)
       val getAllPlayers = db.run(playersTable.filter(_.game_id === gameID).result)
       val getDeck = db.run(cardsTable.filter(_.card_owner === deckID).result)
@@ -129,26 +116,16 @@ class DaoSlickImpl() extends DaoInterface{
       val allPlayersWithCards = {
         for (player <- allPlayers) yield {
           val playerName = player._2
-          val getPlayerCards = Await.result(db.run(cardsTable.filter(_.card_owner === player._1).result), 120 seconds)
+          val getPlayerCards = Await.result(db.run(cardsTable.filter(_.card_owner === player._1).result), 180 seconds)
           val playerCards = for(card <- getPlayerCards) yield Card(card._3, card._2)
           Player(playerName, playerCards.toList)
         }
       }
 
-
       val allGameCards = Await.result(getAllGameCards, 120 second)
-      
       val deck = Await.result(getDeck, 120 second)
 
-
-
-      println("all game cards: " + allGameCards)
-      println("all players: " + allPlayers)
-      println("all Players with cards " + allPlayersWithCards)
-      println("the game data: "+ deck)
-
       val deckCards = for(card <- deck) yield Card(card._3, card._2)
-      println(deckCards.toList)
       val gameCards = for(card <- allGameCards) yield Card(card._3, card._2)
 
       Table(allPlayersWithCards.toList, gameCards.toList, Deck(deckCards.toList))

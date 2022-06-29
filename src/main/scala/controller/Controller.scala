@@ -2,6 +2,7 @@ package controller
 
 import model.gameComponent.{Card, Table, TableGenerator}
 import model.persistenceComponent.XMLImpl.FileIOAsXML
+import model.persistenceComponent.dbComponent.slickImpl.DaoSlickImpl
 // TODO: properly use google guice here
 // import model.persistenceComponent.XMLImpl.FileIO
 import util.{Observable, UndoManager}
@@ -42,6 +43,7 @@ class Controller(var table: Table) extends Observable{
 
   val undoManager = new UndoManager
   val fileIOAsXML = new FileIOAsXML
+  val slickDB = new DaoSlickImpl
 
 
   def createTestTable(noOfPlayers:Int): Unit = {
@@ -82,6 +84,14 @@ class Controller(var table: Table) extends Observable{
     table = fileIOAsXML.load
     notifyObservers()
   }
+
+  def saveGameInDB(): Unit = slickDB.save(table)
+
+  def loadGameFromDB(): Unit ={
+    table = slickDB.load()
+    notifyObservers()
+  }
+
   /*
   def saveGameViaRestAsXML(): Unit = {
     val system: ActorSystem[Any] = ActorSystem(Behaviors.empty, "SingleRequest")

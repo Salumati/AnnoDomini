@@ -11,7 +11,6 @@ import slick.jdbc.MySQLProfile.api._
 import com.typesafe.config._
 
 import model.persistenceComponent.dbComponent.DaoInterface
-import model.persistenceComponent.XMLImpl.FileIOAsXML
 import model.gameComponent.{Card, Table, Deck, Player, TableGenerator}
 
 
@@ -55,7 +54,7 @@ class DaoSlickImpl() extends DaoInterface{
       Await.ready(createTablesIfNotExist, 3 minute)
 
       val insertGameCards = db.run(cardsTable ++= ((table.cardsOnTable).map(c => (1, c.year, c.text, gameID))))
-      val insertPlayers = db.run(playersTable ++= table.players.map(p => ((gameID + p.name), p.name, gameID)))
+      val insertPlayers = db.run(playersTable ++= table.players.map(p => ((gameID+"_"+p.name), p.name, gameID)))
       val insertPCards = db.run(cardsTable ++= table.players.flatMap(p => p.hand.map(c => (1, c.year, c.text, (gameID+"_"+p.name)))))
       val insertGame = db.run(gamesTable += (gameID, deckID))
       val insertDeckCards = db.run(cardsTable ++= (table.deck.cards).map(c => (1, c.year, c.text, deckID)))

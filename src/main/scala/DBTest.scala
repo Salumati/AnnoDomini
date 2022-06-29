@@ -19,7 +19,7 @@ object DBTest {
         */
     println("check if saving works:")
     val tg = new TableGenerator()
-    val t = tg.createTable(2, 60)
+    val t = tg.createTable(1, 20)
     println("the saved table: " + t)
     dbtest.save(t)
 

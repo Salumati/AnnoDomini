@@ -1,11 +1,13 @@
 .bloop
-project/
 .metals
 target/
 .vscode/
+metals.sbt
 
 // ignore save files
 *.xml
 
 // ignore worksheets
 *.sc
+
+.bsp/

@@ -1,4 +1,4 @@
-package model
+package model.gameComponent
 
 case class Card(text: String, year: Int) {
   def showYear: String = year.toString

@@ -1,8 +1,9 @@
 package controller
 
-
-import model.{Card, Table, TableGenerator}
-// // import model.fileIOComponent.Impl.FileIOAsXML
+import model.gameComponent.{Card, Table, TableGenerator}
+import model.persistenceComponent.XMLImpl.FileIOAsXML
+import model.persistenceComponent.dbComponent.slickImpl.DaoSlickImpl
+// TODO: properly use google guice here
 // import model.persistenceComponent.XMLImpl.FileIO
 import util.{Observable, UndoManager}
 import controller.commands.{DoubtCommand, PlaceCardCommand}
@@ -41,12 +42,13 @@ class Controller(var table: Table) extends Observable{
 
 
   val undoManager = new UndoManager
-  //val fileIOAsXML = new FileIOAsXML
+  val fileIOAsXML = new FileIOAsXML
+  val slickDB = new DaoSlickImpl
 
 
   def createTestTable(noOfPlayers:Int): Unit = {
-    val tb = TableGenerator(noOfPlayers, 40)
-    table = tb.createTable
+    val tb = new TableGenerator
+    table = tb.createTable(noOfPlayers, 40)
     notifyObservers()
   }
 
@@ -63,7 +65,7 @@ class Controller(var table: Table) extends Observable{
   }
 
   def showAllPlayers(): String = table.showAllPlayers
-  def confirmWinner: Any = if table.playerWon then "congratulations, player: " + table.previousPlayer + " has won!"
+  def confirmWinner: String = if (table.playerWon) {"congratulations, player: " + table.previousPlayer + " has won!"} else {""}
   def getCard(index:Int): Card = table.takePlayerCard(index)._1
 
   def undo(): Unit ={
@@ -76,14 +78,20 @@ class Controller(var table: Table) extends Observable{
     notifyObservers()
   }
 
-  /*
   def saveGame(): Unit = fileIOAsXML.save(table)
 
   def loadGame(): Unit= {
     table = fileIOAsXML.load
     notifyObservers()
   }
-  */
+
+  def saveGameInDB(): Unit = slickDB.save(table)
+
+  def loadGameFromDB(): Unit ={
+    table = slickDB.load()
+    notifyObservers()
+  }
+
   /*
   def saveGameViaRestAsXML(): Unit = {
     val system: ActorSystem[Any] = ActorSystem(Behaviors.empty, "SingleRequest")

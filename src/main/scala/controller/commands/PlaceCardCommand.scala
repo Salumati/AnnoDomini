@@ -1,7 +1,7 @@
 package controller.commands
 
 import controller.Controller
-import model.Table
+import model.gameComponent.Table
 
 case class PlaceCardCommand(thisCard:Int, placeAt:Int, controller:Controller, oldTable:Table) extends util.Command{
   override def doStep: Unit = controller.table = controller.table.playerPlacesCard(thisCard, placeAt)

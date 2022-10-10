@@ -6,24 +6,6 @@ import util.Observer
 import scala.io.StdIn.readLine
 import scala.util.{Try, Success, Failure}
 
-def NumberOfPlayers(num: Int) : 2 | 3 | 4 ={
-  num match
-    case 2 => 2
-    case 3 => 3
-    case 4 => 4
-    case _ => correctNumber(num)
-}
-def correctNumber(num: Int) : 2 | 3 | 4 = {
-  var returnNum = 3
-  if  (num <= 2)  returnNum = 2
-  else if (num >= 4) returnNum = 4
-  returnNum match
-    case 2 => 2
-    case 4 => 4
-    case _ => 3
-  // TODO: check if this can be simplyfied with higher functions
-}
-
 class Tui(controller: Controller) extends Observer{
 
   controller.add(this)
@@ -35,7 +17,7 @@ class Tui(controller: Controller) extends Observer{
 
     // select how many Players
     println("how many players? (2, 3 or 4)")
-    val numOfPlayers: 2 | 3 | 4 = NumberOfPlayers(handleIntegerInput())
+    val numOfPlayers: Int = NumberOfPlayers(handleIntegerInput())
     controller.createTestTable(numOfPlayers)
     // if only one player: switch into Singleplayer mode
 
@@ -58,10 +40,11 @@ class Tui(controller: Controller) extends Observer{
       case "a" => doAMove(showAllPlayers())
       case "u" => doAMove(controller.undo())
       case "r" => doAMove(controller.redo())
-      /*
       case "s" => doAMove(saveGame())
       case "l" => doAMove(loadGame())
-      
+      case "sd" => doAMove(saveGameInDB())
+      case "ld" => doAMove(loadGameFromDB())
+       /*
       case "rl" => doAMove(loadGameViaRest())
       case "rs" => doAMove(saveGameViaRest())
       */
@@ -84,6 +67,8 @@ class Tui(controller: Controller) extends Observer{
       "\n r = redo"+
       "\n s = save game" +
       "\n l = load game" +
+      "\n sd = save in db" +
+      "\n ld = load from db" +
       "\n rs = save game the REST way" +
       "\n rl = load game the REST way" +      
       "\n q = quit game" +
@@ -122,7 +107,7 @@ class Tui(controller: Controller) extends Observer{
   def showAllPlayers(): Unit = {
     println(controller.showAllPlayers())
   }
-  /*
+  
   def saveGame(): Unit ={
     controller.saveGame()
     println("saved game")
@@ -131,6 +116,16 @@ class Tui(controller: Controller) extends Observer{
     controller.loadGame()
     println("game loaded")
   }
+
+  def saveGameInDB(): Unit ={
+    controller.saveGameInDB()
+    println("saved game from DB")
+  }
+  def loadGameFromDB(): Unit={
+    controller.loadGameFromDB()
+    println("game loaded from DB")
+  }
+  /*
   def saveGameViaRest(): Unit ={
     println("saving game the REST way...")
     controller.saveGameViaRestAsXML()
@@ -147,6 +142,30 @@ class Tui(controller: Controller) extends Observer{
   
   override def update(): Unit = println(controller.tableToString)
 
+
+  def NumberOfPlayers(num: Int): Int ={
+  num match
+    {
+     case 2 => 2
+     case 3 => 3
+     case 4 => 4
+     case _ => correctNumber(num) 
+    }
+}
+
+def correctNumber(num: Int): Int = {
+  var returnNum = 3
+  if  (num <= 2)  returnNum = 2
+  else if (num >= 4) returnNum = 4
+  returnNum match
+    {
+      case 2 => 2
+      case 4 => 4
+      case _ => 3
+    }
+    
+  // TODO: check if this can be simplyfied with higher functions
+}
 
 }
 

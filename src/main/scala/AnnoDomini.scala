@@ -1,11 +1,9 @@
 //import java.util.Scanner
 
-import controller.Controller
-import model.TableGenerator
+import model.gameComponent._
 import view.Tui
-
+import controller.Controller
 import scala.io.StdIn.readLine
-
 
 
 // general things to do:
@@ -26,7 +24,7 @@ import scala.io.StdIn.readLine
 
 object AnnoDomini {
 
-  val controller = new Controller(TableGenerator().createTable)
+  val controller = new Controller(TableGenerator().createTable())
   val tui = new Tui(controller)
 
   // val scanner = new Scanner(System.in)

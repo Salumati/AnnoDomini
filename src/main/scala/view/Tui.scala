@@ -53,6 +53,7 @@ class Tui(controller: Controller) extends Observer{
   }
 
   private def doAMove(function: Unit): Unit ={
+    // maybe we can just put all of this into the Process input line function? then the warning will be gone.
     function
     //confirmWinner()
     handlePlayerInput()
